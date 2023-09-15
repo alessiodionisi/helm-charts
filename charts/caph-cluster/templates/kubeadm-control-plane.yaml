@@ -1,0 +1,69 @@
+{{- $clusterName := include "hetzner-cluster.clusterName" . }}
+{{- $controlPlaneName := include "hetzner-cluster.controlPlaneName" . }}
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: {{ $controlPlaneName | quote }}
+spec:
+  replicas: {{ .Values.controlPlane.replicas }}
+  machineTemplate:
+    infrastructureRef:
+      kind: HCloudMachineTemplate
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      name: {{ $controlPlaneName | quote }}
+  version: {{ .Values.cluster.kubernetesVersion | quote }}
+  kubeadmConfigSpec:
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: external
+    joinConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: external
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HCloudMachineTemplate
+metadata:
+  name: {{ $controlPlaneName | quote }}
+spec:
+  template:
+    spec:
+      type: {{ .Values.controlPlane.type | quote }}
+      imageName: {{ .Values.controlPlane.image | quote }}
+      placementGroupName: control-plane
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineHealthCheck
+metadata:
+  name: {{ $controlPlaneName | quote }}
+spec:
+  clusterName: {{ $clusterName | quote }}
+  maxUnhealthy: 100%
+  nodeStartupTimeout: 15m
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/control-plane: ""
+  unhealthyConditions:
+    - type: Ready
+      status: Unknown
+      timeout: 180s
+    - type: Ready
+      status: "False"
+      timeout: 180s
+  remediationTemplate:
+    kind: HCloudRemediationTemplate
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    name: {{ $controlPlaneName | quote }}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HCloudRemediationTemplate
+metadata:
+  name: {{ $controlPlaneName | quote }}
+spec:
+  template:
+    spec:
+      strategy:
+        type: Reboot
+        retryLimit: 1
+        timeout: 180s

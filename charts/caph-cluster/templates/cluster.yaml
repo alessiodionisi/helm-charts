@@ -1,0 +1,43 @@
+{{- $clusterName := include "hetzner-cluster.clusterName" . }}
+{{- $controlPlaneName := include "hetzner-cluster.controlPlaneName" . }}
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: {{ $clusterName | quote }}
+spec:
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: HetznerCluster
+    name: {{ $clusterName | quote }}
+  controlPlaneRef:
+    kind: KubeadmControlPlane
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    name: {{ $controlPlaneName | quote }}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HetznerCluster
+metadata:
+  name: {{ $clusterName | quote }}
+spec:
+  hcloudNetwork:
+    enabled: false
+  controlPlaneRegions: {{ .Values.controlPlane.regions | toYaml | nindent 4 }}
+  controlPlaneEndpoint:
+    host: ""
+    port: 443
+  controlPlaneLoadBalancer:
+    region: {{ .Values.controlPlane.loadBalancer.region | quote }}
+  sshKeys:
+    hcloud:
+      - name: {{ .Values.cluster.sshKeyName | quote }}
+  hcloudPlacementGroups:
+    - name: control-plane
+      type: spread
+    {{- range $index, $machineDeployment := .Values.machineDeployments }}
+    - name: {{ printf "md-%d" $index | quote }}
+      type: spread
+    {{- end }}
+  hetznerSecretRef:
+    name: hcloud
+    key:
+      hcloudToken: token

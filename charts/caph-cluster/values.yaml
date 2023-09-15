@@ -1,0 +1,18 @@
+cluster:
+  sshKeyName: ssh-key-name
+  kubernetesVersion: "1.28.1"
+
+controlPlane:
+  replicas: 3
+  type: cax11
+  image: kubernetes-1.28.1-debian-12-arm64-1694698759
+  regions:
+    - fsn1
+  loadBalancer:
+    region: fsn1
+
+machineDeployments:
+  - replicas: 3
+    region: fsn1
+    type: cax11
+    image: kubernetes-1.28.1-debian-12-arm64-1694698759
