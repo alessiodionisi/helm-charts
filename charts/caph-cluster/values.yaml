@@ -1,18 +1,32 @@
 cluster:
   sshKeyName: ssh-key-name
-  kubernetesVersion: "1.28.1"
+  kubernetesVersion: "1.29.0"
+  controlPlaneEndpoint:
+    host: ""
+    port: 6443
+  clusterNetwork: {}
 
 controlPlane:
   replicas: 3
-  type: cax11
-  image: kubernetes-1.28.1-debian-12-arm64-1694698759
+  type: cx11
+  image: kubernetes-1.29.0-image-name
   regions:
+    - nbg1
     - fsn1
+    - hel1
   loadBalancer:
-    region: fsn1
+    enabled: true
+    region: nbg1
+    type: lb11
+  endpoint:
+    host: ""
+    port: 0
+  initConfiguration: {}
+  joinConfiguration: {}
 
 machineDeployments:
   - replicas: 3
-    region: fsn1
-    type: cax11
-    image: kubernetes-1.28.1-debian-12-arm64-1694698759
+    region: nbg1
+    type: cx11
+    image: kubernetes-1.29.0-image-name
+    joinConfiguration: {}

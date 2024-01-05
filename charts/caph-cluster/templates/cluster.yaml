@@ -1,14 +1,18 @@
-{{- $clusterName := include "hetzner-cluster.clusterName" . }}
+{{- $name := include "hetzner-cluster.name" . }}
 {{- $controlPlaneName := include "hetzner-cluster.controlPlaneName" . }}
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
-  name: {{ $clusterName | quote }}
+  name: {{ $name | quote }}
+  labels:
+    {{- include "hetzner-cluster.labels" . | nindent 4 }}
 spec:
+  clusterNetwork: {{ .Values.cluster.clusterNetwork | toYaml | nindent 4 }}
+  controlPlaneEndpoint: {{ .Values.cluster.controlPlaneEndpoint | toYaml | nindent 4 }}
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: HetznerCluster
-    name: {{ $clusterName | quote }}
+    name: {{ $name | quote }}
   controlPlaneRef:
     kind: KubeadmControlPlane
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
@@ -17,16 +21,18 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: HetznerCluster
 metadata:
-  name: {{ $clusterName | quote }}
+  name: {{ $name | quote }}
+  labels:
+    {{- include "hetzner-cluster.labels" . | nindent 4 }}
 spec:
   hcloudNetwork:
     enabled: false
   controlPlaneRegions: {{ .Values.controlPlane.regions | toYaml | nindent 4 }}
-  controlPlaneEndpoint:
-    host: ""
-    port: 443
+  controlPlaneEndpoint: {{ .Values.cluster.controlPlaneEndpoint | toYaml | nindent 4 }}
   controlPlaneLoadBalancer:
+    enabled: {{ .Values.controlPlane.loadBalancer.enabled }}
     region: {{ .Values.controlPlane.loadBalancer.region | quote }}
+    type: {{ .Values.controlPlane.loadBalancer.type | quote }}
   sshKeys:
     hcloud:
       - name: {{ .Values.cluster.sshKeyName | quote }}
