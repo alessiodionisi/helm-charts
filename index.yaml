@@ -9,4 +9,15 @@ entries:
     urls:
     - https://github.com/alessiodionisi/helm-charts/releases/download/caph-cluster-0.1.1/caph-cluster-0.1.1.tgz
     version: 0.1.1
-generated: "2023-09-15T11:12:37.8997183Z"
+  registry:
+  - apiVersion: v2
+    appVersion: "2"
+    created: "2025-03-17T17:33:17.886137223Z"
+    description: A Helm chart for OCI Registry
+    digest: ec32f43dc470377ed10e285bd8e7b5181cb2b12802081a0646c6d8b6df500bae
+    name: registry
+    type: application
+    urls:
+    - https://github.com/alessiodionisi/helm-charts/releases/download/registry-0.1.0/registry-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-03-17T17:33:17.886146771Z"
